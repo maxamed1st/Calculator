@@ -8,36 +8,34 @@
     <script src="calculator.js" defer></script>
 </head>
 <body>
-    <content>
-        <header>
-            <!--Screen is divaded to two parts. One for storing all values and operations 
-            and one for displaying current value
-            -->
-            <span id="accumulatorScreen">
-            </span>
-            <span id="currentValue">
-            </span>
-        </header>
-        <main>
-            <span id="allClear">AC </span>
-            <span id="clear">C</span>
-            <span id="/">/</span>
-            <span id="*">*</span>
-            <span id="7">7</span>
-            <span id="8">8</span>
-            <span id="9">9</span>
-            <span id="-">-</span>
-            <span id="4">4</span>
-            <span id="5">5</span>
-            <span id="6">6</span>
-            <span id="+">+</span>
-            <span id="1">1</span>
-            <span id="2">2</span>
-            <span id="3">3</span>
-            <span id="equal">=</span>
-            <span id="0">0</span>
-            <span id="dot">.</span>        
-        </main>
-    </content>
+    <header>
+        <!--Screen is divaded to two parts. One for storing all values and operations 
+        and the other for displaying current value
+        -->
+        <div id="accumulatorScreen">
+        </div>
+        <div id="currentValue">
+        </div>
+    </header>
+    <main>
+        <button id="allClear">AC </button>
+        <button id="clear">C</button>
+        <button id="division" class="operator">/</button>
+        <button id="multiplication" class="operator">*</button>
+        <button class="number">7</button>
+        <button class="number">8</button>
+        <button class="number">9</button>
+        <button id="subtraction" class="operator">-</button>
+        <button class="number">4</button>
+        <button class="number">5</button>
+        <button class="number">6</button>
+        <button id="addition" class="operator">+</button>
+        <button class="number">1</button>
+        <button class="number">2</button>
+        <button class="number">3</button>
+        <button id="equal">=</button>
+        <button id="zero" class="number">0</button>
+        <button id="dot">.</button>        
+    </main>
 </body>
 </html>
