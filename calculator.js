@@ -16,7 +16,10 @@ const screen = {
         currentValue.textContent = "";
         accumulatorScreen.textContent = "";
     },
-    clear : function() {currentValue.textContent = "";},
+    clear : () => currentValue.textContent = "",
+    updateCurrent : value => currentValue.textContent = value,
+    accumulate : value => accumulatorScreen.textContent += `${value} `
 };
+
 allClear.onmouseup = screen.allClear;
 clear.onmouseup = screen.clear;
