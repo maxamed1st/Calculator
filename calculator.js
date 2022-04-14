@@ -114,6 +114,9 @@ const operator = {
         screen.updateCurrent(total);
     }
 }
-allClear.onmouseup = screen.allClear;
-clear.onmouseup = screen.clear;
-operator.equal();
+const main = () => {
+    allClear.onmouseup = screen.allClear;
+    clear.onmouseup = screen.clear;
+    equal.onmouseup = operator.equal;
+}
+main()
