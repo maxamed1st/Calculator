@@ -18,10 +18,18 @@ const screen = {
     },
     clear : () => currentValue.textContent = "",
     updateCurrent : value => currentValue.textContent = value,
-    accumulate : value => accumulatorScreen.textContent += `${value} `
+    accumulate : value => accumulatorScreen.textContent += `${value}`,
+    getCurrentValue : () => currentValue.textContent,
+    getAllValues : () => accumulatorScreen.textContent
 };
 //Operator object performs the basic arithmetic operations and produces result
 const operator = {
+    values : [],
+    index : 0,
+    skipCurrent : null,
+    prevIndex : -1,
+    operationPrecedence : true,
+    lastOperation : false, 
     multiplication : (num1, num2) => {
         return num1*num2;
     },
@@ -29,11 +37,83 @@ const operator = {
         return num1/num2;
     },
     addition : (num1, num2) => {
-        return num1*num2;
+        return num1+num2;
     },
     subtraction : (num1, num2) => {
-        return num1*num2;
+        return num1-num2;
+    },
+    reducerExtension : (prev, current, index, operation, nextValue) => {
+        let result;
+        if (operation) {
+            result = operation(+prev, +nextValue);
+            operator.skipCurrent = index + 1;
+            if (operator.lastOperation===true) {
+                operator.values.push(result);
+                operator.lastOperation = false;
+            }
+            return result;
+        }
+        return current;
+    },
+    setValues : (prev, current, index, array, nextValue) => {
+        let nexOperation = array[index + 2];
+        if ((nexOperation === "*" || nexOperation === "/")) {
+            if ((index + 2)===(array.length - 2)) {
+                operator.lastOperation = true;
+            }
+            if (+operator.prevIndex === index - 1) {
+                operator.values.splice(operator.index, 0, current);
+                operator.index += 1;           
+            } else {
+                operator.values.splice(operator.index, 0, prev, current);
+                operator.index += 2;
+            }
+        } else {
+            if (+operator.prevIndex === index - 1) {
+            operator.values.splice(operator.index, 0, current, nextValue);
+            operator.index += 2;
+            } else {
+            operator.values.splice(operator.index, 0,prev, current, nextValue);
+            operator.index += 3;
+            }
+        }
+        operator.prevIndex = index + 1;
+        return nextValue;
+    },
+    reducerCallback : (prev, current, index, array) => {
+        if (operator.skipCurrent === index) return prev;
+        let nextValue = array[index + 1];
+        let operation;
+        if (operator.operationPrecedence) {
+            (current === "*") ? operation = operator.multiplication : 
+            (current === "/") ? operation = operator.division :
+            operation = null;
+            if (current === "+" || current === "-") {
+                return operator.setValues(prev, current, index, array, nextValue);
+            }
+        } else {
+            (current === "+") ? operation = operator.addition:
+            (current === "-") ? operation = operator.subtraction:
+            operation = null;
+        }
+        let result = operator.reducerExtension(prev, current, index, operation, nextValue);
+        return result;
+    },
+    equal : () => {
+        let allValues = screen.getAllValues().trim().split('');
+        let total;
+        if (allValues.length === 0) {
+            return screen.updateCurrent('Can\'t calculate without operator and operands');
+        }
+        total = allValues.reduce(operator.reducerCallback);
+        if (operator.values.length > 0) {
+            operator.operationPrecedence = false;
+            total = operator.values.reduce(operator.reducerCallback);
+            operator.operationPrecedence = true;
+        }
+        screen.updateCurrent(total);
     }
 }
 allClear.onmouseup = screen.allClear;
 clear.onmouseup = screen.clear;
+operator.equal();
