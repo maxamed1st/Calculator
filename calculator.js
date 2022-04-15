@@ -1,6 +1,6 @@
 const accumulatorScreen = document.getElementById("accumulatorScreen");
 const currentValue = document.getElementById("currentValue");
-const numbers = document.getElementsByClassName("number");
+const numbers = document.querySelectorAll(".number");
 const dot = document.getElementById("dot");
 const equal = document.getElementById("equal");
 const multiplication = document.getElementById("multiplication");
@@ -17,7 +17,8 @@ const screen = {
         accumulatorScreen.textContent = "";
     },
     clear : () => currentValue.textContent = "",
-    updateCurrent : value => currentValue.textContent = value,
+    setCurrentValue : value => currentValue.textContent = value,
+    extendCurrentValue : value => currentValue.textContent += `${value}`,
     accumulate : value => accumulatorScreen.textContent += `${value}`,
     getCurrentValue : () => currentValue.textContent,
     getAllValues : () => accumulatorScreen.textContent
@@ -41,6 +42,9 @@ const operator = {
     },
     subtraction : (num1, num2) => {
         return num1-num2;
+    },
+    numbersEvent : (e) => {
+        screen.extendCurrentValue(e.target.textContent);
     },
     reducerExtension : (prev, current, index, operation, nextValue) => {
         let result;
@@ -103,7 +107,7 @@ const operator = {
         let allValues = screen.getAllValues().trim().split('');
         let total;
         if (allValues.length === 0) {
-            return screen.updateCurrent('Can\'t calculate without operator and operands');
+            return screen.setCurrentValue('Can\'t calculate without operator and operands');
         }
         total = allValues.reduce(operator.reducerCallback);
         if (operator.values.length > 0) {
@@ -111,12 +115,13 @@ const operator = {
             total = operator.values.reduce(operator.reducerCallback);
             operator.operationPrecedence = true;
         }
-        screen.updateCurrent(total);
+        screen.setCurrentValue(total);
     }
 }
 const main = () => {
     allClear.onmouseup = screen.allClear;
     clear.onmouseup = screen.clear;
     equal.onmouseup = operator.equal;
+    numbers.forEach(num => num.onmouseup = operator.numbersEvent);
 }
 main()
