@@ -5,7 +5,7 @@ const dot = document.getElementById("dot");
 const equal = document.getElementById("equal");
 const operators = document.querySelectorAll(".operator");
 const multiplication = document.getElementById("multiplication");
-const division = document.getElementById("divistion");
+const division = document.getElementById("division");
 const addition = document.getElementById("addition");
 const subtraction = document.getElementById("subtraction");
 const clear = document.getElementById("clear");
@@ -82,14 +82,17 @@ const operator = {
             }
         }
     },
-    reducerExtension : (prev, current, index, operation, nextValue) => {
+    reducerExtension : (prev, current, index, array, operation, nextValue) => {
         let result;
+        if ((!operator.operationPrecedence) && (typeof (array[array.length-1]) === "number")) {
+            operator.values = [];
+        }
         if (operation) {
             result = operation(+prev, +nextValue);
             operator.skipCurrent = index + 1;
             if (operator.lastOperation===true) {
+                if (typeof prev === "number") operator.values.pop();
                 operator.values.push(result);
-                operator.lastOperation = false;
             }
             return result;
         }
@@ -98,23 +101,23 @@ const operator = {
     setValues : (prev, current, index, array, nextValue) => {
         let nexOperation = array[index + 2];
         if ((nexOperation === "*" || nexOperation === "/")) {
-            if ((index + 2)===(array.length - 2)) {
-                operator.lastOperation = true;
-            }
+            operator.lastOperation = true;
             if (+operator.prevIndex === index - 1) {
                 operator.values.splice(operator.index, 0, current);
-                operator.index += 1;           
+                operator.index += 1;       
             } else {
                 operator.values.splice(operator.index, 0, prev, current);
                 operator.index += 2;
             }
         } else {
-            if (+operator.prevIndex === index - 1) {
-            operator.values.splice(operator.index, 0, current, nextValue);
-            operator.index += 2;
-            } else {
-            operator.values.splice(operator.index, 0,prev, current, nextValue);
-            operator.index += 3;
+            if(operator.lastOperation) operator.lastOperation = false;
+            if ((+operator.prevIndex === index - 1)) {
+                operator.values.splice(operator.index, 0, current, nextValue);
+                operator.index += 2;
+                }
+             else {
+                operator.values.splice(operator.index, 0,prev, current, nextValue);
+                operator.index += 3;
             }
         }
         operator.prevIndex = index + 1;
@@ -122,13 +125,21 @@ const operator = {
     },
     reducerCallback : (prev, current, index, array) => {
         if (operator.skipCurrent === index) return prev;
+        let nexOperation = array[index + 2];
         let nextValue = array[index + 1];
+        if (!nextValue) nextValue = 1;
         let operation;
         if (operator.operationPrecedence) {
             (current === "*") ? operation = operator.multiplication : 
             (current === "/") ? operation = operator.division :
             operation = null;
             if (current === "+" || current === "-") {
+                if (operator.values.length > 0) {
+                    lastNum = operator.values[operator.values.length-1];
+                } else lastNum = "";
+                if (typeof lastNum === "number" && operator.values.length > 0) {
+                    operator.prevIndex = index - 1;
+                }
                 return operator.setValues(prev, current, index, array, nextValue);
             }
         } else {
@@ -136,7 +147,7 @@ const operator = {
             (current === "-") ? operation = operator.subtraction:
             operation = null;
         }
-        let result = operator.reducerExtension(prev, current, index, operation, nextValue);
+        let result = operator.reducerExtension(prev, current, index, array,operation, nextValue);
         return result;
     },
     calculate : () => {
@@ -157,11 +168,14 @@ const operator = {
         if (allValues.length === 0) {
             return screen.setCurrentValue('Can\'t calculate without operator and operands');
         }
+        //Evaluate multiplication first
         total = allValues.reduce(operator.reducerCallback);
         if (operator.values.length > 0) {
+            //Evaluate addition
             operator.operationPrecedence = false;
             total = operator.values.reduce(operator.reducerCallback);
             operator.operationPrecedence = true;
+            operator.values = [];
         }
         return total;
     },
