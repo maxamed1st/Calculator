@@ -66,7 +66,8 @@ const operator = {
             screen.setCurrentValue("-");
             operator.currentMinus = false;
         }
-        screen.extendCurrentValue(e.target.textContent);
+        if (e.key) screen.extendCurrentValue(e.key);
+        else screen.extendCurrentValue(e.target.textContent);
     },
     dotEvent : () => {
         //If there is no dot in currentValue then add one
@@ -104,9 +105,11 @@ const operator = {
         screen.setCurrentValue("I can't divide by zero")
     },
     operation : (e) => {
-        let currentOperator = e.target.textContent;
         let screenCurrentValue = screen.getCurrentValue();
         let result;
+        let currentOperator;
+        if(e.key) currentOperator = e.key;
+        else currentOperator = e.target.textContent;
         if (screenCurrentValue === "") {
             if (currentOperator === "-") screen.setCurrentValue(currentOperator);
             else {
@@ -248,6 +251,15 @@ const operator = {
         screen.reset = true;
     }
 }
+const keyEvent = (e) => {
+    let numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    if (numbers.indexOf(e.key) !== -1) operator.numbersEvent(e);
+    else if (e.key === ".") operator.dotEvent();
+    else if (e.key === "*" || e.key === "/" || e.key === "+" || e.key === "-") operator.operation(e);
+    else if (e.key === "=" || e.key === "Enter" || e.key === " " || e.key === "Spacebar") operator.equality();
+    else if (e.key === "Backspace") screen.clear();
+    else if (e.key === "Escape") screen.allClear();
+}
 const main = () => {
     allClear.onmouseup = screen.allClear;
     clear.onmouseup = screen.clear;
@@ -255,5 +267,6 @@ const main = () => {
     numbers.forEach(num => num.onmouseup = operator.numbersEvent);
     dot.onmouseup = operator.dotEvent;
     operators.forEach(element => element.onmouseup = operator.operation);
+    document.onkeydown = keyEvent;
 }
 main();
