@@ -68,6 +68,17 @@ const operator = {
         }
         screen.extendCurrentValue(e.target.textContent);
     },
+    dotEvent : () => {
+        //If there is no dot in currentValue then add one
+        screenCurrentValue = screen.getCurrentValue();
+        if (screen.reset || screenCurrentValue == "") {
+            if (screen.reset) screen.reset = false;
+            screen.setCurrentValue("0.");
+        } else {
+            if (screenCurrentValue.split("").indexOf(".") > -1) return;
+            else screen.extendCurrentValue(".");
+        }
+    },
     nonCalculable : (reason = "No operand") => {
         //Display why operation is nonCalculable
         screen.reset = true;
@@ -242,6 +253,7 @@ const main = () => {
     clear.onmouseup = screen.clear;
     equal.onmouseup = operator.equality;
     numbers.forEach(num => num.onmouseup = operator.numbersEvent);
+    dot.onmouseup = operator.dotEvent;
     operators.forEach(element => element.onmouseup = operator.operation);
 }
 main();
