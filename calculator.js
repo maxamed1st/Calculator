@@ -16,12 +16,16 @@ const screen = {
     array : [],
     index : 0,
     reset : false,
-    updateArray : element => screen.array.push(element),
+    updateArray : element => {
+        screen.array[screen.index] = element;
+        screen.index++;
+    },
     allClear : function() {
         screen.array = [];
         currentValue.textContent = "";
         accumulatorScreen.textContent = "";
         operator.temp = null;
+        operator.currentMinus = false;
     },
     clear : () => currentValue.textContent = "",
     setCurrentValue : value => currentValue.textContent = value,
@@ -39,6 +43,7 @@ const operator = {
     operationPrecedence : true,
     lastOperation : false,
     temp : null,
+    currentMinus : false,
     multiplication : (num1, num2) => {
         return num1*num2;
     },
@@ -56,7 +61,27 @@ const operator = {
             screen.setCurrentValue("");
             screen.reset = false;
         }
+        if (operator.currentMinus) {
+            screen.setCurrentValue("-");
+            operator.currentMinus = false;
+        }
         screen.extendCurrentValue(e.target.textContent);
+    },
+    nonCalculable : (reason = "No operand") => {
+        //Display why operation is nonCalculable
+        screen.reset = true;
+        if (reason === "No operation") {
+            return screen.setCurrentValue('Can\'t calculate without operator and operands');
+        }
+        else if (reason === "Adjacent operators") {
+            operator.currentMinus = true;
+            return screen.setCurrentValue("Two operators in a row not allowed");
+        }
+        else if(reason === "Same reason") {
+            return screen.setCurrentValue("Two operators in a row are still not allowed");
+        } else {
+            return screen.setCurrentValue("You cant operate without operands");
+        }
     },
     operation : (e) => {
         let currentOperator = e.target.textContent;
@@ -64,21 +89,30 @@ const operator = {
         let result;
         if (screenCurrentValue === "") {
             if (currentOperator === "-") screen.setCurrentValue(currentOperator);
-            else screen.setCurrentValue("You cant operate without operands");
+            else {
+                return operator.nonCalculable();
+            }
         } else {
-            if (operator.temp) {
-                screen.accumulate(operator.temp);
-                screen.updateArray(operator.temp);
-            };
-            screen.accumulate(screenCurrentValue);
-            screen.updateArray(screenCurrentValue);
-            operator.temp = currentOperator;   
-            if (screen.array.length > 2) {
-                screen.reset = true;
-                result = operator.calculate();
-                screen.setCurrentValue(result);
-            } else {
-                screen.setCurrentValue("")
+            if (screenCurrentValue.startsWith("Y") || screenCurrentValue.startsWith("C")) {         
+                return operator.nonCalculable();
+            }
+            else if(screenCurrentValue.startsWith("T")) return operator.nonCalculable("Same reason");
+            else if (screenCurrentValue === "-") return operator.nonCalculable("Adjacent operators");
+            else {
+                if (operator.temp) {
+                    screen.accumulate(operator.temp);
+                    screen.updateArray(operator.temp);
+                };
+                screen.accumulate(screenCurrentValue);
+                screen.updateArray(screenCurrentValue);
+                operator.temp = currentOperator;   
+                if (screen.array.length > 2) {
+                    screen.reset = true;
+                    result = operator.calculate();
+                    screen.setCurrentValue(result);
+                } else {
+                    screen.setCurrentValue("")
+                }
             }
         }
     },
@@ -166,7 +200,7 @@ const operator = {
             }
         }
         if (allValues.length === 0) {
-            return screen.setCurrentValue('Can\'t calculate without operator and operands');
+            return operator.nonCalculable("No operation");
         }
         //Evaluate multiplication first
         total = allValues.reduce(operator.reducerCallback);
