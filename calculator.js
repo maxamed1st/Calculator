@@ -44,6 +44,7 @@ const operator = {
     lastOperation : false,
     temp : null,
     currentMinus : false,
+    zeroDivision : false,
     multiplication : (num1, num2) => {
         return num1*num2;
     },
@@ -79,9 +80,17 @@ const operator = {
         }
         else if(reason === "Same reason") {
             return screen.setCurrentValue("Two operators in a row are still not allowed");
+        }
+        else if (reason === "Text") {
+            return screen.setCurrentValue("Can't operate on my own error message");
         } else {
             return screen.setCurrentValue("You cant operate without operands");
         }
+    },
+    zeroDivisionTrue : () => {
+        operator.zeroDivision = false;
+        screen.reset = true;
+        screen.setCurrentValue("I can't divide by zero")
     },
     operation : (e) => {
         let currentOperator = e.target.textContent;
@@ -98,6 +107,7 @@ const operator = {
             }
             else if(screenCurrentValue.startsWith("T")) return operator.nonCalculable("Same reason");
             else if (screenCurrentValue === "-") return operator.nonCalculable("Adjacent operators");
+            else if (screenCurrentValue.startsWith("I")) return operator.nonCalculable("Text");
             else {
                 if (operator.temp) {
                     screen.accumulate(operator.temp);
@@ -109,7 +119,8 @@ const operator = {
                 if (screen.array.length > 2) {
                     screen.reset = true;
                     result = operator.calculate();
-                    screen.setCurrentValue(result);
+                    if (operator.zeroDivision) operator.zeroDivisionTrue();
+                    else screen.setCurrentValue(result);
                 } else {
                     screen.setCurrentValue("")
                 }
@@ -120,6 +131,10 @@ const operator = {
         let result;
         if ((!operator.operationPrecedence) && (typeof (array[array.length-1]) === "number")) {
             operator.values = [];
+        }
+        if (operation === operator.division && nextValue === "0") {
+            operator.zeroDivision = true;
+            return null;
         }
         if (operation) {
             result = operation(+prev, +nextValue);
@@ -217,7 +232,8 @@ const operator = {
         /*Calculate terms and clear accumulatorScreen*/
         let total = operator.calculate();
         screen.allClear();
-        screen.setCurrentValue(total);
+        if (operator.zeroDivision) operator.zeroDivisionTrue();
+        else screen.setCurrentValue(total);
         screen.reset = true;
     }
 }
