@@ -16,10 +16,7 @@ const screen = {
     array : [],
     index : 0,
     reset : false,
-    updateArray : element => {
-        screen.array[screen.index] = element;
-        screen.index++;
-    },
+    updateArray : element => screen.array.push(element),
     allClear : function() {
         screen.array = [];
         currentValue.textContent = "";
@@ -58,6 +55,7 @@ const operator = {
         return num1-num2;
     },
     numbersEvent : (e) => {
+        //Check if screen.reset or currentMinus are active and act accordingly
         if (screen.reset) {
             screen.setCurrentValue("");
             screen.reset = false;
@@ -66,6 +64,7 @@ const operator = {
             screen.setCurrentValue("-");
             operator.currentMinus = false;
         }
+        //accept input from mouse and keyboard
         if (e.key) screen.extendCurrentValue(e.key);
         else screen.extendCurrentValue(e.target.textContent);
     },
@@ -149,19 +148,25 @@ const operator = {
         }
     },
     reducerExtension : (prev, current, index, array, operation, nextValue) => {
+        /*Calculate and return result and if there is no operation, return current value */
         let result;
         if ((!operator.operationPrecedence) && (typeof (array[array.length-1]) === "number")) {
+            //Empty operator.values in case addition is being evaluated and last element is a product
             operator.values = [];
         }
         if (operation === operator.division && nextValue === "0") {
+            //zeroDivision prevention
             operator.zeroDivision = true;
             return null;
         }
         if (operation) {
+            //Calculate expression
             result = operation(+prev, +nextValue);
             operator.skipCurrent = index + 1;
             if (operator.lastOperation===true) {
+                //If last value in operator.values is a number. delete it
                 if (typeof prev === "number") operator.values.pop();
+                //Push the result to operator.values
                 operator.values.push(result);
             }
             return result;
@@ -169,8 +174,12 @@ const operator = {
         return current;
     },
     setValues : (prev, current, index, array, nextValue) => {
-        let nexOperation = array[index + 2];
-        if ((nexOperation === "*" || nexOperation === "/")) {
+        /*Add values to operator.values. Take into account
+        if prev value is already added or if next operation is multiplication
+        meaning that nextValue should not be added
+        */
+        let nextOperation = array[index + 2];
+        if ((nextOperation === "*" || nextOperation === "/")) {
             operator.lastOperation = true;
             if (+operator.prevIndex === index - 1) {
                 operator.values.splice(operator.index, 0, current);
@@ -194,29 +203,35 @@ const operator = {
         return nextValue;
     },
     reducerCallback : (prev, current, index, array) => {
+        //If set to skip iteration then continue to next
         if (operator.skipCurrent === index) return prev;
-        let nexOperation = array[index + 2];
         let nextValue = array[index + 1];
         if (!nextValue) nextValue = 1;
         let operation;
         if (operator.operationPrecedence) {
+            //Implement operation precendence
             (current === "*") ? operation = operator.multiplication : 
             (current === "/") ? operation = operator.division :
             operation = null;
             if (current === "+" || current === "-") {
+                //If addition exist. Add the products as addition to operator.values
+                //for the next evaluation
                 if (operator.values.length > 0) {
                     lastNum = operator.values[operator.values.length-1];
                 } else lastNum = "";
-                if (typeof lastNum === "number" && operator.values.length > 0) {
+                //If operator.values already exists make sure not to add adjacent number elements
+                if (typeof lastNum === "number") {
                     operator.prevIndex = index - 1;
                 }
                 return operator.setValues(prev, current, index, array, nextValue);
             }
         } else {
+            //Evaluate addition
             (current === "+") ? operation = operator.addition:
             (current === "-") ? operation = operator.subtraction:
             operation = null;
         }
+        //Call reducerExtension to perform calculations and return the result
         let result = operator.reducerExtension(prev, current, index, array,operation, nextValue);
         return result;
     },
@@ -227,8 +242,9 @@ const operator = {
         //Add latest value and operator to array
         if (currentValue.length > 0 && !screen.reset) {
             if(operator.temp){
+                //If there is a operator last on screen
+                //and currentValues exists then add them to array
                 allValues.push(operator.temp, currentValue)
-                screen.accumulate(operator.temp);
                 screen.accumulate(currentValue)
             } else {
                 allValues.push(currentValue);
@@ -259,6 +275,7 @@ const operator = {
     }
 }
 const keyEvent = (e) => {
+    //Add keyboard support for the relevant keys
     let numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
     if (numbers.indexOf(e.key) !== -1) operator.numbersEvent(e);
     else if (e.key === ".") operator.dotEvent();
@@ -268,6 +285,7 @@ const keyEvent = (e) => {
     else if (e.key === "Escape") screen.allClear();
 }
 const main = () => {
+    //Add functionality to buttons and keyboard support
     allClear.onmouseup = screen.allClear;
     clear.onmouseup = screen.clear;
     equal.onmouseup = operator.equality;
