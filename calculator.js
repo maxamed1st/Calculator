@@ -108,8 +108,10 @@ const operator = {
         let screenCurrentValue = screen.getCurrentValue();
         let result;
         let currentOperator;
+        //Check if operation is called by keyboar or mouseclick
         if(e.key) currentOperator = e.key;
         else currentOperator = e.target.textContent;
+        //Validate that minus is the only operation that can be added at start
         if (screenCurrentValue === "") {
             if (currentOperator === "-") screen.setCurrentValue(currentOperator);
             else {
@@ -119,23 +121,28 @@ const operator = {
             if (screenCurrentValue.startsWith("Y") || screenCurrentValue.startsWith("C")) {         
                 return operator.nonCalculable();
             }
+            //Check if operation is being done on text or there is adjacent operators;
             else if(screenCurrentValue.startsWith("T")) return operator.nonCalculable("Same reason");
             else if (screenCurrentValue === "-") return operator.nonCalculable("Adjacent operators");
             else if (screenCurrentValue.startsWith("I")) return operator.nonCalculable("Text");
             else {
                 if (operator.temp) {
-                    screen.accumulate(operator.temp);
+                    //If last value on screen is an operator. Add it to array
                     screen.updateArray(operator.temp);
                 };
+                //Add current value to the accumulater and array
                 screen.accumulate(screenCurrentValue);
                 screen.updateArray(screenCurrentValue);
+                screen.accumulate(currentOperator);
                 operator.temp = currentOperator;   
                 if (screen.array.length > 2) {
+                    //If there is enought values on screen, calculate and display result
                     screen.reset = true;
                     result = operator.calculate();
                     if (operator.zeroDivision) operator.zeroDivisionTrue();
                     else screen.setCurrentValue(result);
                 } else {
+                    //If there is only one value. clear it!
                     screen.setCurrentValue("")
                 }
             }
