@@ -5,16 +5,30 @@ html {
     box-sizing: inherit;
 }
 body {
-    background-color: #3d2d03;
+    background-color: #334036;
 }
 header {
+    display: flex;
+    flex-flow: column nowrap;
     width: 414px;
     height: 100px;
     border-width: 2px 2px 0 2px;
     border-style: outset;
     border-color: rgb(133, 133, 133);
-    background-color: #ccccb3;
+    background-color: #cacfcb;
     margin: auto;
+}
+#accumulatorScreen {
+    height: 70%;
+    width: 100%;
+    font-size: 22px;
+}
+#currentValue {
+    display: flex;
+    justify-content: flex-end;
+    height: 30%;
+    width: 100%;
+    font-size: 22px;
 }
 main {
     display: grid;
@@ -27,26 +41,25 @@ main {
     "1 2 3 equal"
     "z z dot equal";
     margin: auto;
-    background-color: #b3b3cc;
     width: 414px;
     height: 414px;
 }
 #equal {
     grid-area: equal;
-    background-color: #4040bf;
+    background-color: #9151e0;
 }
 #zero {
     grid-area: z;
-    background-color: #800000;
+    background-color: #9151e0;
     
 }
 .operator, #allClear, #clear {
-    background-color: #ff9900;
+    background-color: #7303ff;
 }
 .number, #dot {
-    background-color: #1f1f2e;
+    background-color: #f55fa3;
 }
 button {
     font-size: 18px;
-    color: white;
+    color: black;
 }
