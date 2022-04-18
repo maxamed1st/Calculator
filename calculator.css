@@ -9,7 +9,7 @@ body {
 }
 header {
     display: flex;
-    flex-flow: column nowrap;
+    flex-flow: column wrap;
     width: 414px;
     height: 100px;
     border-width: 2px 2px 0 2px;
@@ -17,18 +17,20 @@ header {
     border-color: rgb(133, 133, 133);
     background-color: #cacfcb;
     margin: auto;
+    word-break: break-all;
 }
 #accumulatorScreen {
     height: 70%;
     width: 100%;
-    font-size: 22px;
+    font-size: 20px;
+    overflow: hidden;
 }
 #currentValue {
     display: flex;
     justify-content: flex-end;
     height: 30%;
     width: 100%;
-    font-size: 22px;
+    font-size: 20px;
 }
 main {
     display: grid;
